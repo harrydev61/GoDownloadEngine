@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "pb/";
+
+message CreateUserByEmailAndIpReq {
+  string Email = 1;
+  string Ip = 2;
+}
+
+message CreateUserByEmailAndIpResp {
+  string UserId = 1;
+}
+
+service UserService {
+  rpc CreateUserByEmailAndIp(CreateUserByEmailAndIpReq) returns (CreateUserByEmailAndIpResp);
+}

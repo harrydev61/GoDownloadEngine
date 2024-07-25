@@ -18,4 +18,13 @@
 # vendor/
 
 # Go workspace file
+go.work
+go.work.sum
 .idea
+.env
+.vscode
+.DS_Store
+LICENSE
+download_sources
+
+
