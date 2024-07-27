@@ -19,7 +19,22 @@ definitions:
       status:
         type: integer
     type: object
-  dto.AuthLogging:
+  entity.AuthLogging:
+    properties:
+      authType:
+        type: integer
+      email:
+        type: string
+      password:
+        maxLength: 100
+        minLength: 8
+        type: string
+    required:
+    - authType
+    - email
+    - password
+    type: object
+  entity.AuthRegister:
     properties:
       authType:
         type: integer
@@ -27,12 +42,43 @@ definitions:
         type: string
       email:
         type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
       password:
+        maxLength: 100
+        minLength: 8
         type: string
     required:
     - authType
+    - confirmPassword
     - email
+    - firstName
+    - lastName
     - password
+    type: object
+  entity.Create:
+    properties:
+      description:
+        maxLength: 1000
+        minLength: 8
+        type: string
+      downloadType:
+        enum:
+        - 1
+        type: integer
+      name:
+        maxLength: 500
+        minLength: 3
+        type: string
+      url:
+        type: string
+    required:
+    - description
+    - downloadType
+    - name
+    - url
     type: object
 host: localhost:8080
 info:
@@ -54,7 +100,7 @@ paths:
         name: login
         required: true
         schema:
-          $ref: '#/definitions/dto.AuthLogging'
+          $ref: '#/definitions/entity.AuthLogging'
       produces:
       - application/json
       responses:
@@ -77,4 +123,153 @@ paths:
       summary: User login
       tags:
       - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: User register
+      parameters:
+      - description: User register
+        in: body
+        name: register
+        required: true
+        schema:
+          $ref: '#/definitions/entity.AuthRegister'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+      summary: User register
+      tags:
+      - Auth
+  /download-task/:downloadID:
+    get:
+      consumes:
+      - application/json
+      description: Get detail download task
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+      summary: Get detail download task
+      tags:
+      - Download task
+  /download-task/create:
+    post:
+      consumes:
+      - application/json
+      description: Create download task
+      parameters:
+      - description: Create download task
+        in: body
+        name: download-task
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Create'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+      summary: Create download task
+      tags:
+      - Download task
+  /download-task/delete/:downloadID:
+    delete:
+      consumes:
+      - application/json
+      description: Tenderly delete download task
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+      summary: Tenderly delete download task
+      tags:
+      - Download task
+  /download-task/list:
+    get:
+      consumes:
+      - application/json
+      description: Get list download task
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+      summary: Get list download task
+      tags:
+      - Download task
 swagger: "2.0"

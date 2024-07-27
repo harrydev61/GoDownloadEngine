@@ -80,6 +80,33 @@ func (d *DownloadTaskRepositoryImpl) Create(ctx context.Context, downloadTask *e
 	return newTask, nil
 }
 
+func (d *DownloadTaskRepositoryImpl) TenderlyDeleteDownloadTask(ctx context.Context, userId, downloadTaskId string) (*string, error) {
+	var task *entity.DownloadTask
+
+	txErr := d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		// check exist
+		if err := tx.Table(task.GetTableName()).
+			Where("userId=? AND download_id = ? AND is_delete = ?", userId, downloadTaskId, common.RecordNotDeleted).
+			First(&task).Error; err != nil {
+			return err
+		}
+
+		if err := d.db.WithContext(ctx).
+			Table(entity.DownloadTask{}.GetTableName()).
+			Where("userId=? AND download_id = ? AND is_delete = ?", userId, downloadTaskId, common.RecordNotDeleted).
+			Updates(map[string]interface{}{"is_delete": common.RecordIsDeleted}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if txErr != nil {
+		return nil, txErr
+	}
+
+	return &task.DownloadID, nil
+}
+
 func (d *DownloadTaskRepositoryImpl) UpdateStatus(downloadId string, status int) error {
 	var task entity.DownloadTask
 	if err := d.db.Table(task.GetTableName()).
@@ -91,7 +118,7 @@ func (d *DownloadTaskRepositoryImpl) UpdateStatus(downloadId string, status int)
 	return nil
 }
 
-func (d *DownloadTaskRepositoryImpl) GetByUserIdAndDownloadId(userId int, downloadId int) (*entity.DownloadTask, error) {
+func (d *DownloadTaskRepositoryImpl) GetByUserIdAndDownloadId(ctx context.Context, userId string, downloadId string) (*entity.DownloadTask, error) {
 	var downloadTask entity.DownloadTask
 	if err := d.db.Table(downloadTask.GetTableName()).
 		Where("user_id = ?,download_id = ? AND is_deleted = ?", userId, downloadId, common.RecordNotDeleted).
@@ -167,7 +194,7 @@ func (d *DownloadTaskRepositoryImpl) GetListByUserId(ctx context.Context, userId
 	offset := (page - 1) * limit
 
 	// Build the query
-	query := d.db.WithContext(ctx).Table(entity.DownloadTask{}.GetTableName()).Where("user_id = ? AND is_deleted", userId, common.RecordNotDeleted)
+	query := d.db.WithContext(ctx).Table(entity.DownloadTask{}.GetTableName()).Where("user_id = ? AND is_deleted = ?", userId, common.RecordNotDeleted)
 
 	// Apply sorting based on sortTime parameter
 	if sortTime == 1 {
@@ -198,4 +225,31 @@ func (d *DownloadTaskRepositoryImpl) GetCountByUserId(ctx context.Context, userI
 	}
 
 	return count, nil
+}
+
+func (d *DownloadTaskRepositoryImpl) GetPendingDownloadTaskIDList(ctx context.Context, status int) ([]entity.DownloadTask, error) {
+	var tasks []entity.DownloadTask
+
+	// Build the query
+	query := d.db.WithContext(ctx).
+		Table(entity.DownloadTask{}.GetTableName()).
+		Where("download_status= ? AND is_deleted = ?", status, common.RecordNotDeleted).
+		Order("created_at asc")
+	// Fetch the results with pagination
+	if err := query.Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+
+	return tasks, nil
+
+}
+
+func (d *DownloadTaskRepositoryImpl) UpdateDownloadingAndFailedDownloadTaskStatusToPending(ctx context.Context) error {
+	if err := d.db.WithContext(ctx).
+		Table(entity.DownloadTask{}.GetTableName()).
+		Where("download_status= ? AND is_deleted = ?", common.DownloadTaskFailed, common.RecordNotDeleted).
+		Updates(map[string]interface{}{"download_status": common.DownloadTaskPending}).Error; err != nil {
+		return err
+	}
+	return nil
 }

@@ -46,5 +46,11 @@ const (
 	DownloadModeS3    = "S3"
 
 	//file
-	DownloadFileNamePrefix = "download_file"
+	DownloadFileNamePrefix                        = "download_file"
+	DownloadTaskMetadataFieldNameFileName         = "file-name"
+	ExecuteAllPendingDownloadTaskConcurrencyLimit = 8
+
+	//jobs
+	ExecuteAllPendingDownloadTaskSchedule                         = "@every 1m"
+	UpdateDownloadingAndFailedDownloadTaskStatusToPendingSchedule = "@every 3m"
 )

@@ -30,5 +30,8 @@ func SetupHttpRouter(serviceCtx core.ServiceContext, router *gin.RouterGroup) {
 	downloadGroup := router.Group("/download-task", authMiddleware)
 	{
 		downloadGroup.POST("/create", composerDownloadTask.CreateDownloadTask())
+		downloadGroup.GET("/:downloadID", composerDownloadTask.GetDetailDownloadTask())
+		downloadGroup.GET("/list", composerDownloadTask.GetListDownloadTask())
+		downloadGroup.DELETE("/delete/:downloadID", composerDownloadTask.TenderlyDeleteDownloadTask())
 	}
 }

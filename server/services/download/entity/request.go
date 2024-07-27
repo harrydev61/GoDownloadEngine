@@ -26,3 +26,43 @@ func (d *Create) Validate() error {
 	}
 	return nil
 }
+
+type GetDetail struct {
+	DownloadID string `uri:"downloadID" validate:"required,uuid"`
+}
+
+func (d *GetDetail) Validate() error {
+	validate := validator.New()
+	if err := validate.Struct(d); err != nil {
+		// custom validate
+		return err
+	}
+	return nil
+}
+
+type GetLists struct {
+	Page  int `form:"page" validate:"required,min=1,numeric"`
+	Limit int `form:"limit" validate:"required,min=1,numeric"`
+}
+
+func (d *GetLists) Validate() error {
+	validate := validator.New()
+	if err := validate.Struct(d); err != nil {
+		// custom validate
+		return err
+	}
+	return nil
+}
+
+type Delete struct {
+	DownloadID string `uri:"downloadID" validate:"required,uuid"`
+}
+
+func (d *Delete) Validate() error {
+	validate := validator.New()
+	if err := validate.Struct(d); err != nil {
+		// custom validate
+		return err
+	}
+	return nil
+}

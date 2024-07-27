@@ -11,6 +11,9 @@ import (
 
 type DownloadTaskHdl interface {
 	CreateDownloadTask() func(ctx *gin.Context)
+	GetDetailDownloadTask() func(ctx *gin.Context)
+	GetListDownloadTask() func(ctx *gin.Context)
+	TenderlyDeleteDownloadTask() func(ctx *gin.Context)
 }
 
 func DownloadTaskApi(sctx core.ServiceContext) DownloadTaskHdl {
@@ -18,7 +21,9 @@ func DownloadTaskApi(sctx core.ServiceContext) DownloadTaskHdl {
 	producer := sctx.MustGet(common.KeyCompProducer).(common.ProducerComponent)
 	fileComponent := sctx.MustGet(common.KeyCompFileClient).(common.FileClientComponent)
 	repo := mysql_impl.NewDownloadTaskRepositoryImpl(db.GetDB())
-	dtBusiness := business.NewDownloadTaskBusiness(sctx, repo, producer, fileComponent.GetClient())
+
+	fileClient := fileComponent.GetClient()
+	dtBusiness := business.NewDownloadTaskBusiness(sctx, repo, producer, fileClient)
 	apiTransport := api.NewDownloadTransport(sctx, dtBusiness)
 	return apiTransport
 }

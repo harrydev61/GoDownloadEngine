@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gammazero/workerpool"
+	"github.com/pkg/errors"
 	"github.com/tranTriDev61/GoDownloadEngine/common"
 	"github.com/tranTriDev61/GoDownloadEngine/core"
 	"github.com/tranTriDev61/GoDownloadEngine/services/download/entity"
 	"github.com/tranTriDev61/GoDownloadEngine/services/download/repository/mysql"
 	"time"
-)
-
-const (
-	downloadTaskMetadataFieldNameFileName = "file-name"
 )
 
 type DownloadTaskBusiness struct {
@@ -57,6 +55,31 @@ func (b *DownloadTaskBusiness) CreateDownloadTask(ctx context.Context, userId st
 
 	return result, nil
 }
+func (b *DownloadTaskBusiness) GetListDownloadTask(ctx context.Context, userId string, page, limit int) ([]entity.DownloadTask, error) {
+	downloadTask, err := b.Repository.GetListByUserId(ctx, userId, page, limit, 1)
+	if err != nil {
+		b.logger.Errorf("can't get list download task by userId: %s, %d,%d, err: %v", userId, page, limit, err)
+		return make([]entity.DownloadTask, 0), err
+	}
+	return downloadTask, nil
+}
+func (b *DownloadTaskBusiness) TenderlyDeleteDownloadTask(ctx context.Context, userId, downloadTaskId string) (*string, error) {
+	deleteId, err := b.Repository.TenderlyDeleteDownloadTask(ctx, userId, downloadTaskId)
+	if err != nil {
+		b.logger.Errorf("can't delete download task by userId: %s, %s, err: %v", userId, downloadTaskId, err)
+		return nil, errors.New("can't delete download task")
+	}
+	return deleteId, nil
+}
+func (b *DownloadTaskBusiness) GetDetailDownloadTask(ctx context.Context, userId, downloadTaskId string) (*entity.DownloadTask, error) {
+	downloadTask, err := b.Repository.GetByUserIdAndDownloadId(ctx, userId, downloadTaskId)
+	if err != nil {
+		b.logger.Errorf("can't get detail download task by id %s, err: %v", downloadTaskId, err)
+		return nil, err
+	}
+	return downloadTask, nil
+
+}
 
 func (b *DownloadTaskBusiness) ExecuteDownloadTask(ctx context.Context, downloadTaskId string) (*entity.DownloadTask, error) {
 	//update download task to
@@ -93,7 +116,7 @@ func (b *DownloadTaskBusiness) ExecuteDownloadTask(ctx context.Context, download
 		b.updateDownloadTaskToFailed(ctx, downloadTaskId)
 		return nil, err
 	}
-	metadata[downloadTaskMetadataFieldNameFileName] = fileName
+	metadata[common.DownloadTaskMetadataFieldNameFileName] = fileName
 	downloadTask.DownloadStatus = common.DownloadTaskSuccess
 	downloadTask.Metadata = entity.JSON{
 		Data: metadata,
@@ -106,10 +129,37 @@ func (b *DownloadTaskBusiness) ExecuteDownloadTask(ctx context.Context, download
 	b.logger.Debugf("end execute download task %s", downloadTaskId, time.Now())
 	return nil, nil
 }
-
 func (b *DownloadTaskBusiness) updateDownloadTaskToFailed(ctx context.Context, downloadTaskId string) {
 	err := b.Repository.UpdateStatus(downloadTaskId, common.DownloadTaskFailed)
 	if err != nil {
 		b.logger.Errorf("can't update download task status to failed: %s", err)
 	}
+}
+func (d *DownloadTaskBusiness) ExecuteAllPendingDownloadTask(ctx context.Context) error {
+	pendingDownloadTaskIDList, err := d.Repository.GetPendingDownloadTaskIDList(ctx, common.DownloadTaskPending)
+	if err != nil {
+		return err
+	}
+	if len(pendingDownloadTaskIDList) == 0 {
+		d.logger.Info("no pending download task found")
+		return nil
+	}
+
+	d.logger.Infof("start execute all pending download task tasks %s", len(pendingDownloadTaskIDList))
+
+	workerPool := workerpool.New(common.ExecuteAllPendingDownloadTaskConcurrencyLimit)
+	jobLogger := d.Sctx.Logger("ExecuteAllPendingDownloadTask")
+	for _, task := range pendingDownloadTaskIDList {
+		workerPool.Submit(func() {
+			if _, exDownloadTaskErr := d.ExecuteDownloadTask(ctx, task.DownloadID); exDownloadTaskErr != nil {
+				jobLogger.Errorf("failed to execute download task %s: %s", task.DownloadID, exDownloadTaskErr)
+			}
+		})
+	}
+
+	workerPool.StopWait()
+	return nil
+}
+func (d *DownloadTaskBusiness) UpdateDownloadingAndFailedDownloadTaskStatusToPending(ctx context.Context) error {
+	return d.Repository.UpdateDownloadingAndFailedDownloadTaskStatusToPending(ctx)
 }

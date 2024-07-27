@@ -30,7 +30,7 @@ func NewAuthApi(serviceCtx core.ServiceContext, biz AuthBusiness) *authApi {
 //	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			login 	body		dto.AuthLogging		true	"User login"
+//	@Param			login 	body		entity.AuthLogging		true	"User login"
 //	@Success		200		{object}	common.BaseSuccessResponse
 //	@Failure		404		{object}	common.BaseErrorResponse
 //	@Failure		422		{object}	common.BaseErrorResponse
@@ -64,7 +64,7 @@ func (h *authApi) LoginHdl() func(*gin.Context) {
 //	@Tags			Auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			register 	body		dto.AuthRegister		true	"User register"
+//	@Param			register 	body		entity.AuthRegister		true	"User register"
 //	@Success		200		{object}	common.BaseSuccessResponse
 //	@Failure		404		{object}	common.BaseErrorResponse
 //	@Failure		422		{object}	common.BaseErrorResponse

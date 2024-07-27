@@ -14,10 +14,9 @@ type DownloadTaskMqHandler interface {
 
 func DownloadTaskMq(sctx core.ServiceContext) DownloadTaskMqHandler {
 	db := sctx.MustGet(common.KeyCompMySQL).(common.GormComponent)
-	fileComponent := sctx.MustGet(common.KeyCompFileClient).(common.FileClientComponent)
-	producer := sctx.MustGet(common.KeyCompProducer).(common.ProducerComponent)
 	repo := mysql_impl.NewDownloadTaskRepositoryImpl(db.GetDB())
-	dlBusiness := business.NewDownloadTaskBusiness(sctx, repo, producer, fileComponent.GetClient())
+
+	dlBusiness := business.NewDownloadTaskBusiness(sctx, repo, nil, nil)
 	downloader := mq.NewDownloader(sctx, dlBusiness)
 	return downloader
 }
