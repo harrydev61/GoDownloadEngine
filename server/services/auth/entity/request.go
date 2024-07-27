@@ -39,7 +39,7 @@ type AuthRegister struct {
 func (ar *AuthRegister) Validate() error {
 	regex := `^[a-zA-Z0-9]{6,32}$`
 	re := regexp.MustCompile(regex)
-	if !re.MatchString(ar.FirstName) || !re.MatchString(ar.LastName) || !re.MatchString(ar.Password) {
+	if !re.MatchString(ar.Password) {
 		return errors.New("firstName, lastName or password is valid")
 	}
 	switch ar.AuthType {

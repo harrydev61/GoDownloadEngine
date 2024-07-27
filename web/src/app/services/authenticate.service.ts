@@ -4,7 +4,7 @@ import {HttpService} from "@services/http.service";
 import {environment} from "../../environments/environment";
 import {AuthResponseData} from "@models/auth-response-data.model";
 import {User} from "@models/user.model";
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, map, Observable} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -31,8 +31,15 @@ export class AuthenticationService {
   login(email: string, password: string) {
     return this.httpService.post(this.apiServerPath.auth.login, {
       email: email,
-      password: password
-    })
+      password: password,
+      authType: 1,
+    }, map((response: any) => {
+      return {
+        status: response?.status,
+        message: response?.message,
+        data: response.data
+      };
+    }))
   }
 
   logout() {

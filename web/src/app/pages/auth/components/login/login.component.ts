@@ -3,6 +3,7 @@ import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/
 import {AuthenticationService} from "@services/authenticate.service";
 import {BaseComponent} from "@app/component/base/base.component";
 import {catchError, map} from "rxjs";
+import {User} from "@models/user.model";
 
 @Component({
   selector: 'pages-auth-login-app-login',
@@ -36,7 +37,10 @@ export class PagesAuthLoginComponent extends BaseComponent implements OnInit {
     const password = this.loginForm.value.password;
     this.authenticationService.login(email, password).subscribe((result) => {
       if (result) {
-        console.log(result);
+        if (result?.status === 1) {
+          //get user info
+          return
+        }
       }
     })
   }

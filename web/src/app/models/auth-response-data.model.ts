@@ -15,3 +15,4 @@ export interface AuthResponseData {
   status: number,
   groupUserPermission: any[],
 }
+

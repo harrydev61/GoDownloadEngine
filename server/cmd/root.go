@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/gin-contrib/cors"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/tranTriDev61/GoDownloadEngine/component/filec"
@@ -86,6 +87,15 @@ func setupGinServer(serviceCtx core.ServiceContext) *http.Server {
 	logger := core.GlobalLogger().GetLogger("gin.core.services")
 	ginComp := serviceCtx.MustGet(common.KeyCompGIN).(common.GINComponent)
 	router := ginComp.GetRouter()
+	// Set up CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:4200"}, // Change to your allowed origins
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	router.Use(gin.Recovery(), gin.Logger(), gincMiddleware.RecoveryMiddleware(serviceCtx))
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	api := router.Group(ginComp.GetPrefix())

@@ -57,9 +57,9 @@ export const environment = {
     ],
     backendServer: {
         host: 'localhost',
-        port: 4040,
+        port: 4000,
         prefix: 'api/v1',
-        url: 'http://localhost:4040',
+        url: 'http://localhost:4000',
         paths: {
             auth: {
                 login: 'auth/login',
