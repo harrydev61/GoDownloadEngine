@@ -28,7 +28,7 @@ export const environment = {
     },
     user: {
         avatar: {
-            default: './assets/styles/download/images/logo-mini.png',
+            default: './assets/styles/downloader/images/logo-mini.png',
         },
     },
     telegram: {

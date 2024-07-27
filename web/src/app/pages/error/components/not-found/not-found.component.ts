@@ -8,5 +8,5 @@ import { Component } from '@angular/core';
   styleUrl: './not-found.component.scss'
 })
 export class ErrorNotFoundComponent {
-
+  protected notFountImagePath = "../../../assets/images/illustrations/404.svg";
 }

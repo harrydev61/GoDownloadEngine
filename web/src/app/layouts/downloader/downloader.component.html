@@ -1,0 +1,13 @@
+<div>
+  <layout-partial-app-header></layout-partial-app-header>
+  <div class="flex pt-16 overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <layout-partial-app-sidebar></layout-partial-app-sidebar>
+    <div class="p-4 relative w-full h-full overflow-y-auto bg-gray-50 lg:ml-64 dark:bg-gray-900">
+      <main id="main-content">
+        <router-outlet></router-outlet>
+      </main>
+      <layout-partial-app-footer></layout-partial-app-footer>
+    </div>
+  </div>
+</div>
+

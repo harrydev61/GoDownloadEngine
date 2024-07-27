@@ -1,7 +1,7 @@
-import { Routes } from '@angular/router';
-import { LayoutErrorComponent } from './layouts/error/error.component';
-import { LayoutDefaultComponent } from '@app/layouts/download/download.component';
-import { LayoutAuthComponent } from './layouts/auth/auth.component';
+import {Routes} from '@angular/router';
+import {LayoutErrorComponent} from './layouts/error/error.component';
+import {LayoutDownloaderComponent} from '@app/layouts/downloader/downloader.component';
+import {LayoutAuthComponent} from './layouts/auth/auth.component';
 
 export const routes: Routes = [
   {
@@ -14,27 +14,43 @@ export const routes: Routes = [
     component: LayoutAuthComponent,
     title: 'auth',
     loadChildren: () =>
-      import('./pages/auth/auth.routes').then((m) => m.AuthRoutes),
-    data: { preload: false },
+      import('@app/pages/auth/auth.routes').then((m) => m.AuthRoutes),
+    data: {preload: false},
   },
   {
     path: '',
-    component: LayoutDefaultComponent,
+    component: LayoutDownloaderComponent,
     title: 'Download engine',
     loadChildren: () =>
-      import('@app/pages/download/download.routes').then((m) => m.DownloadRoutes),
-    data: { preload: false },
+      import('@app/pages/downloader/downloader.routes').then((m) => m.DownloaderRoutes),
+    data: {preload: false},
+  },
+  {
+    path: 'setting',
+    component: LayoutDownloaderComponent,
+    title: 'setting',
+    loadChildren: () =>
+      import('@app/pages/setting/setting.routes').then((m) => m.SettingRoutes),
+    data: {preload: false},
+  },
+  {
+    path: 'admin',
+    component: LayoutDownloaderComponent,
+    title: 'admin',
+    loadChildren: () =>
+      import('@app/pages/admin/admin.routes').then((m) => m.AdminRoutes),
+    data: {preload: false},
   },
   {
     path: 'error',
     component: LayoutErrorComponent,
     title: 'error',
     loadChildren: () =>
-      import('./pages/error/error.routes').then((m) => m.ErrorRoutes),
-    data: { preload: false },
+      import('@app/pages/error/error.routes').then((m) => m.ErrorRoutes),
+    data: {preload: false},
   },
   /**
    * Page 404
    */
-  { path: '**', redirectTo: 'error/404' },
+  {path: '**', redirectTo: 'error/404'},
 ];

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { PagesAuthLoginComponent } from './login/login.component';
+import { PagesAuthLoginComponent } from '@app/pages/auth/components/login/login.component';
 
 
 export const AuthRoutes: Routes = [

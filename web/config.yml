@@ -1,0 +1,31 @@
+languageCode:           "en"
+title:                  "Flowbite Admin Dashboard"
+# baseURL:                "http://localhost:1313"
+baseURL:                "https://flowbite-admin-dashboard.vercel.app/"
+enableInlineShortcodes: true
+canonifyURLs: true
+
+params:
+  homepage: "https://flowbite.com/"
+  authors: Themesberg
+  social_image_path: images/og-image.png
+
+markup:
+  goldmark:
+    renderer:
+      unsafe:           true
+  highlight:
+    noClasses:          false
+    style:              colorful
+  tableOfContents:
+    startLevel:         2
+    endLevel:           6
+
+buildDrafts:            true
+buildFuture:            true
+
+enableRobotsTXT:        true
+metaDataFormat:         "yaml"
+disableKinds:           ["404", "taxonomy", "taxonomyTerm", "RSS"]
+
+publishDir:             "_gh_pages"
