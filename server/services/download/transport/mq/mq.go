@@ -8,16 +8,17 @@ import (
 	"github.com/tranTriDev61/GoDownloadEngine/services/download/entity"
 )
 
-type DownloadBusiness interface {
+type downloadBusiness interface {
 	ExecuteDownloadTask(ctx context.Context, downloadTaskId string) (*entity.DownloadTask, error)
 }
+
 type downloader struct {
 	Sctx     core.ServiceContext
 	logger   core.Logger
-	business DownloadBusiness
+	business downloadBusiness
 }
 
-func NewDownloader(s core.ServiceContext, business DownloadBusiness) *downloader {
+func NewDownloader(s core.ServiceContext, business downloadBusiness) *downloader {
 	return &downloader{Sctx: s, logger: s.Logger("download.transport.mq"), business: business}
 }
 

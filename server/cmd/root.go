@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-contrib/cors"
+	"github.com/go-co-op/gocron/v2"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/tranTriDev61/GoDownloadEngine/component/filec"
@@ -13,6 +14,7 @@ import (
 	"github.com/tranTriDev61/GoDownloadEngine/component/mq/producer"
 	"github.com/tranTriDev61/GoDownloadEngine/component/redisc"
 	grpCcomposer "github.com/tranTriDev61/GoDownloadEngine/composer/grpc"
+	jobsCcomposer "github.com/tranTriDev61/GoDownloadEngine/composer/jobs"
 	mqCcomposer "github.com/tranTriDev61/GoDownloadEngine/composer/mq"
 	_ "github.com/tranTriDev61/GoDownloadEngine/docs"
 	"github.com/tranTriDev61/GoDownloadEngine/proto/pb"
@@ -62,6 +64,13 @@ var rootCmd = &cobra.Command{
 		go setupGrpcService(serviceCtx)
 		setupProducerMq(serviceCtx)
 		go setupConsumerHandler(serviceCtx)
+		jobServer, err := setupJobsHandler(serviceCtx)
+		if err != nil {
+			jobServer.Shutdown()
+			serviceCtx.Stop()
+			panic(err)
+			return
+		}
 		server := setupGinServer(serviceCtx)
 
 		quit := make(chan os.Signal)
@@ -70,8 +79,11 @@ var rootCmd = &cobra.Command{
 		logger.Warnf("Shutdown Server ...")
 		ctx, cancel := context.WithTimeout(context.Background(), serviceCtx.GetTimeSleep())
 		defer cancel()
+		if err := jobServer.Shutdown(); err != nil {
+			logger.Fatal("Cron job server Shutdown error:", err)
+		}
 		if err := server.Shutdown(ctx); err != nil {
-			logger.Fatal("Server Shutdown:", err)
+			logger.Fatal("Server Shutdown　error:", err)
 		}
 		select {
 		case <-ctx.Done():
@@ -157,6 +169,50 @@ func setupProducerMq(sctx core.ServiceContext) {
 		logger.Panicf(err.Error())
 	}
 	logger.Infof("Started producer mq with key: %s", common.KeyCompProducer)
+
+}
+
+func setupJobsHandler(sctx core.ServiceContext) (gocron.Scheduler, error) {
+	logger := sctx.Logger("Setup jobs cron job handler")
+	// create a scheduler
+	s, err := gocron.NewScheduler()
+	if err != nil {
+		// handle error
+		return nil, err
+	}
+
+	// add a job to the scheduler
+	cronJobComposer := jobsCcomposer.TakeDownloadTaskCronJobHdl(sctx)
+	j, err := s.NewJob(
+		gocron.CronJob(common.ExecuteAllPendingDownloadTaskSchedule, true),
+		gocron.NewTask(func() {
+			logger.Debugf("run execute all pending download task job action ")
+			if err := cronJobComposer.ExecuteAllPendingDownloadTask(context.Background()); err != nil {
+				logger.Errorf("failed to run execute all pending download task job , error: %v", err)
+			}
+		}),
+	)
+	if err != nil {
+		logger.Errorf("failed to run job cron job , error: %v", err)
+		return nil, err
+	}
+
+	b, err := s.NewJob(
+		gocron.CronJob(common.UpdateDownloadingAndFailedDownloadTaskStatusToPendingSchedule, true),
+		gocron.NewTask(func() {
+			if err := cronJobComposer.UpdateDownloadingAndFailedDownloadTaskStatusToPending(context.Background()); err != nil {
+				logger.Errorf("failed to run update download task job , error: %v", err)
+			}
+		}),
+	)
+	if err != nil {
+		logger.Errorf("failed to run job cron job , error: %v", err)
+		return nil, err
+	}
+	s.Start()
+	logger.Infof("Add cron job id:%s", j.ID())
+	logger.Infof("Add cron job id:%s", b.ID())
+	return s, nil
 
 }
 func Execute() {

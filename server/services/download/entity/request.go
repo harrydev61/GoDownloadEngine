@@ -1,9 +1,7 @@
 package entity
 
 import (
-	"errors"
 	"github.com/go-playground/validator/v10"
-	"regexp"
 )
 
 type Create struct {
@@ -14,11 +12,11 @@ type Create struct {
 }
 
 func (d *Create) Validate() error {
-	regex := `^[a-zA-Z0-9]{6,32}$`
-	re := regexp.MustCompile(regex)
-	if !re.MatchString(d.Name) {
-		return errors.New("name is valid")
-	}
+	//regex := `^[a-zA-Z0-9 ]*$`
+	//re := regexp.MustCompile(regex)
+	//if !re.MatchString(d.Name) {
+	//	return errors.New("name is valid")
+	//}
 	validate := validator.New()
 	if err := validate.Struct(d); err != nil {
 		// custom validate

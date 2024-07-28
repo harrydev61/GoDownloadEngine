@@ -1,27 +1,25 @@
-package composer
+package jobs
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
 	"github.com/tranTriDev61/GoDownloadEngine/common"
 	"github.com/tranTriDev61/GoDownloadEngine/core"
 	"github.com/tranTriDev61/GoDownloadEngine/services/download/business"
 	"github.com/tranTriDev61/GoDownloadEngine/services/download/repository/mysql/mysql_impl"
-	"github.com/tranTriDev61/GoDownloadEngine/services/download/transport/api"
+	"github.com/tranTriDev61/GoDownloadEngine/services/download/transport/jobs"
 )
 
-type DownloadTaskHdl interface {
-	CreateDownloadTask() func(ctx *gin.Context)
-	GetDetailDownloadTask() func(ctx *gin.Context)
-	GetListDownloadTask() func(ctx *gin.Context)
-	TenderlyDeleteDownloadTask() func(ctx *gin.Context)
+type DownloadTaskCronJobHdl interface {
+	ExecuteAllPendingDownloadTask(ctx context.Context) error
+	UpdateDownloadingAndFailedDownloadTaskStatusToPending(ctx context.Context) error
 }
 
-func DownloadTaskApi(sctx core.ServiceContext) DownloadTaskHdl {
+func TakeDownloadTaskCronJobHdl(sctx core.ServiceContext) DownloadTaskCronJobHdl {
 	db := sctx.MustGet(common.KeyCompMySQL).(common.GormComponent)
 	producer := sctx.MustGet(common.KeyCompProducer).(common.ProducerComponent)
 	fileComponent := sctx.MustGet(common.KeyCompFileClient).(common.FileClientComponent)
 	repo := mysql_impl.NewDownloadTaskRepositoryImpl(db.GetDB())
 	dtBusiness := business.NewDownloadTaskBusiness(sctx, repo, producer, fileComponent.GetClient())
-	apiTransport := api.NewDownloadTransport(sctx, dtBusiness)
-	return apiTransport
+	cronJobTransport := jobs.NewCronJobsDownloader(sctx, dtBusiness)
+	return cronJobTransport
 }
