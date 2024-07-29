@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"github.com/tranTriDev61/GoDownloadEngine/common"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +21,7 @@ func RecoveryMiddleware(serviceCtx core.ServiceContext) gin.HandlerFunc {
 					c.AbortWithStatusJSON(appErr.StatusCode(), appErr)
 				} else {
 					// General panic cases
-					c.AbortWithStatusJSON(http.StatusInternalServerError, common.ErrInternalServerError)
+					c.AbortWithStatusJSON(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 				}
 
 				serviceCtx.Logger("services").Errorf("%+v \n", err)

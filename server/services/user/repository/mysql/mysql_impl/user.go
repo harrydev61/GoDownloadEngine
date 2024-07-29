@@ -1,10 +1,8 @@
 package mysql_impl
 
 import (
-	"fmt"
-	"time"
-
-	"github.com/pkg/errors"
+	"context"
+	"errors"
 	"github.com/tranTriDev61/GoDownloadEngine/common"
 	"github.com/tranTriDev61/GoDownloadEngine/core"
 
@@ -24,64 +22,64 @@ func NewUserRepositoryImpl(db *gorm.DB) *UserRepositoryImpl {
 
 func (repo *UserRepositoryImpl) GetByUserId(userId string) (*entity.UserEntity, error) {
 	var data entity.UserEntity
-	err := repo.db.Table(data.GetTableName()).Where("user_id=?", userId).Where("is_deleted=?", 0).First(&data).Error
+	err := repo.db.Table(data.GetTableName()).Where("user_id = ? AND is_deleted = ?", userId, 0).First(&data).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, core.ErrRecordNotFound
 		}
 		return nil, err
 	}
-	if &data == nil {
-		return nil, core.ErrRecordNotFound
-	}
 	return &data, nil
-
 }
 
-func (repo *UserRepositoryImpl) CreateByEmailAndIp(email, ip string) (*entity.UserEntity, error) {
-	exit, err := repo.GetByEmail(email)
-	if exit != nil {
-		return nil, entity.ErrEmailHasExisted
-	}
-	timeNow := time.Now().UTC()
-	userEntity := entity.NewUserEntity(email, email, email, "", "", 4, "unknown", &timeNow, -1, ip)
-	err = repo.db.Table(userEntity.GetTableName()).Create(&userEntity).Error
-	if err != nil {
+func getByEmailTx(tx *gorm.DB, email string) (*entity.UserEntity, error) {
+	var user entity.UserEntity
+	if err := tx.Table(user.GetTableName()).Where("email = ? AND is_deleted = ?", email, common.RecordNotDeleted).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
+	return &user, nil
+}
 
-	return userEntity, nil
+func (repo *UserRepositoryImpl) CreateUser(ctx context.Context, userEntity entity.UserEntity) (*entity.UserEntity, error) {
+	txErr := repo.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		exist, err := getByEmailTx(tx, userEntity.Email)
+		if err != nil {
+			return err
+		}
+		if exist != nil {
+			return entity.ErrEmailHasExisted
+		}
+
+		if err := tx.Table(userEntity.GetTableName()).Create(&userEntity).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Table(userEntity.GetTableName()).
+			Where("user_id = ? AND is_deleted = ?", userEntity.UserId, common.RecordNotDeleted).
+			First(&userEntity).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if txErr != nil {
+		return nil, txErr
+	}
+	return &userEntity, nil
 }
 
 func (repo *UserRepositoryImpl) GetByEmail(email string) (*entity.UserEntity, error) {
 	var data entity.UserEntity
-	err := repo.db.Table(data.GetTableName()).Where("email=?", email).Where("is_deleted=?", 0).First(&data).Error
+	err := repo.db.Table(data.GetTableName()).Where("email = ? AND is_deleted = ?", email, common.RecordNotDeleted).First(&data).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, core.ErrRecordNotFound
 		}
 		return nil, err
 	}
-	if &data == nil {
-		return nil, core.ErrRecordNotFound
-	}
 	return &data, nil
-
-}
-func (repo *UserRepositoryImpl) UpdateStatusByUserId(userId string, status int) (*entity.UserEntity, error) {
-	var data entity.UserEntity
-	exit, err := repo.GetByUserId(userId)
-	fmt.Println(exit, err)
-	if err != nil {
-		return nil, err
-	}
-	if exit == nil {
-		return nil, errors.New(common.GetCodeText(common.EntityNotExists))
-	}
-	exit.Status = status
-	if err := repo.db.Table(data.GetTableName()).Where("user_id=?", userId).Updates(exit).Error; err != nil {
-		return nil, err
-	}
-
-	return exit, nil
 }

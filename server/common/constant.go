@@ -27,7 +27,7 @@ const (
 	AuthTypeEmailPassword = 1
 
 	//kafka
-	DownloadTaskTopic = "downloadTask"
+	DownloadTaskTopic = "download-task-create"
 
 	//download status
 	DownloadTaskPending = 0

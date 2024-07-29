@@ -4,10 +4,11 @@ import (
 	"context"
 	"github.com/tranTriDev61/GoDownloadEngine/core"
 	"github.com/tranTriDev61/GoDownloadEngine/proto/pb"
+	"github.com/tranTriDev61/GoDownloadEngine/services/user/entity"
 )
 
 type AuthServiceGrpcBiz interface {
-	CreateUserByEmailAndIp(email, ip string) (*string, error)
+	CreateUser(ctx context.Context, request entity.CreateUserRequest) (*string, error)
 }
 
 type userService struct {
@@ -22,13 +23,20 @@ func NewUserServiceGrpc(serviceCtx core.ServiceContext, biz AuthServiceGrpcBiz) 
 	}
 }
 
-func (s *userService) CreateUserByEmailAndIp(ctx context.Context, req *pb.CreateUserByEmailAndIpReq) (*pb.CreateUserByEmailAndIpResp, error) {
-	result, err := s.business.CreateUserByEmailAndIp(req.Email, req.Ip)
+func (s *userService) CreateUser(ctx context.Context, req *pb.CreateUserReq) (*pb.CreateUserResp, error) {
+	newUser := entity.CreateUserRequest{
+		Email:     req.Email,
+		Ip:        req.Ip,
+		Firstname: req.Firstname,
+		Lastname:  req.Lastname,
+	}
+
+	userId, err := s.business.CreateUser(ctx, newUser)
 	if err != nil {
 		return nil, err
 	}
-	resp := &pb.CreateUserByEmailAndIpResp{
-		UserId: *result,
+	resp := &pb.CreateUserResp{
+		UserId: *userId,
 	}
 	return resp, nil
 }

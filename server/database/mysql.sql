@@ -70,6 +70,8 @@ CREATE TABLE IF NOT EXISTS `auths`
 CREATE TABLE IF NOT EXISTS `token_public_keys` (
                                                    `id` BIGINT UNSIGNED AUTO_INCREMENT,
                                                    `public_key` TEXT NOT NULL,
+                                                   `created_at`  datetime                           DEFAULT CURRENT_TIMESTAMP,
+                                                   `updated_at`  datetime                           DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                                                    PRIMARY KEY (`id`)
     ) ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4
@@ -78,10 +80,15 @@ CREATE TABLE IF NOT EXISTS `token_public_keys` (
 CREATE TABLE IF NOT EXISTS `download_tasks` (
                                                 `download_id`       VARCHAR(36)  NOT NULL,
     `user_id`     VARCHAR(36)  NOT NULL,
+    `name`     VARCHAR(500)  NOT NULL,
+    `description`     VARCHAR(1000),
     `download_type` SMALLINT NOT NULL,
     `url` TEXT NOT NULL,
     `download_status` SMALLINT NOT NULL,
+    `is_deleted` TINYINT(2)                       DEFAULT 0  NOT NULL,
     `metadata` TEXT NOT NULL,
+    `created_at`  datetime                           DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`  datetime                           DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (`download_id`)
     ) ENGINE = InnoDB
     DEFAULT CHARSET = utf8mb4

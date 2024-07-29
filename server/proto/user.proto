@@ -4,15 +4,17 @@ package pb;
 
 option go_package = "pb/";
 
-message CreateUserByEmailAndIpReq {
+message CreateUserReq {
   string Email = 1;
   string Ip = 2;
+  string Firstname = 3;
+  string  Lastname = 4;
 }
 
-message CreateUserByEmailAndIpResp {
+message CreateUserResp {
   string UserId = 1;
 }
 
 service UserService {
-  rpc CreateUserByEmailAndIp(CreateUserByEmailAndIpReq) returns (CreateUserByEmailAndIpResp);
+  rpc CreateUser(CreateUserReq) returns (CreateUserResp);
 }

@@ -26,7 +26,6 @@ type Component interface {
 type ServiceContext interface {
 	Load() error
 	MustGet(id string) interface{}
-	AddComponent(c Component) error
 	Get(id string) (interface{}, bool)
 	Logger(prefix string) Logger
 	EnvName() string
@@ -36,6 +35,8 @@ type ServiceContext interface {
 	Stop() error
 	OutEnv()
 	GetTimeSleep() time.Duration
+	SetService(key string, ser interface{}) string
+	GetService(key string) interface{}
 }
 
 type serviceCtx struct {
@@ -45,6 +46,7 @@ type serviceCtx struct {
 	id         string
 	components []Component
 	store      map[string]Component
+	services   map[string]interface{}
 	cmdLine    *AppFlagSet
 	logger     Logger
 	timeSleep  int
@@ -52,7 +54,8 @@ type serviceCtx struct {
 
 func NewServiceContext(opts ...Option) ServiceContext {
 	sv := &serviceCtx{
-		store: make(map[string]Component),
+		store:    make(map[string]Component),
+		services: make(map[string]interface{}),
 	}
 	sv.components = []Component{defaultLogger}
 
@@ -135,14 +138,6 @@ func (s *serviceCtx) Stop() error {
 	return nil
 }
 
-func (s *serviceCtx) AddComponent(c Component) error {
-	if _, ok := s.store[c.ID()]; !ok {
-		s.components = append(s.components, c)
-		s.store[c.ID()] = c
-	}
-	return nil
-}
-
 func (s *serviceCtx) GetName() string { return s.name }
 func (s *serviceCtx) GetID() string   { return s.id }
 func (s *serviceCtx) GetIP() string   { return s.ip }
@@ -181,4 +176,18 @@ func (s *serviceCtx) parseFlags() {
 
 func (s *serviceCtx) GetTimeSleep() time.Duration {
 	return time.Duration(s.timeSleep) * time.Second
+}
+func (s *serviceCtx) SetService(key string, ser interface{}) string {
+	if _, ok := s.services[key]; !ok {
+		s.services[key] = ser
+	}
+	return key
+}
+func (s *serviceCtx) GetService(key string) interface{} {
+	ser, ok := s.services[key]
+	if !ok {
+		panic(fmt.Sprintf("can not get service in core service with key %s\n", key))
+		return nil
+	}
+	return ser
 }

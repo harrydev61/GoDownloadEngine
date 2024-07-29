@@ -24,14 +24,18 @@ func NewDownloader(s core.ServiceContext, business downloadBusiness) *downloader
 
 func (d *downloader) ProcessingDownloadTask() common.MqHandlerFunc {
 	return func(ctx context.Context, queueName string, payload []byte) error {
-
+		d.logger.Infof("\"download task created event received\" %s, %v", queueName, payload)
 		var event entity.DownloadTaskMessageMp
 		if err := json.Unmarshal(payload, &event); err != nil {
+			d.logger.Errorf("Unable to unmarshal payload error: %v", err)
 			return err
 		}
-		d.logger.Infof("\"download task created event received\" %s, %v", queueName, event)
 		_, err := d.business.ExecuteDownloadTask(ctx, event.DownloadTaskId)
-		return err
+		if err != nil {
+			d.logger.Errorf("download task created event received to execution  failed, %v", err)
+			return err
+		}
+		return nil
 	}
 
 }

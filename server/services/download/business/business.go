@@ -17,21 +17,16 @@ type DownloadTaskBusiness struct {
 	Sctx       core.ServiceContext
 	logger     core.Logger
 	Repository mysql.DownloadTaskRepository
-	producer   common.ProducerComponent
-	fileClient common.FileClient
 }
 
 func NewDownloadTaskBusiness(
 	sctx core.ServiceContext,
 	repo mysql.DownloadTaskRepository,
-	producer common.ProducerComponent,
-	fileClient common.FileClient) *DownloadTaskBusiness {
+) *DownloadTaskBusiness {
 	return &DownloadTaskBusiness{
 		Sctx:       sctx,
 		logger:     sctx.Logger("DownloadTaskBusiness"),
 		Repository: repo,
-		producer:   producer,
-		fileClient: fileClient,
 	}
 }
 
@@ -48,7 +43,8 @@ func (b *DownloadTaskBusiness) CreateDownloadTask(ctx context.Context, userId st
 		b.logger.Error("can't marshal download task message", err)
 		return nil, entity.ErrCannotCreateDownloadTask
 	}
-	err = b.producer.Produce(context.Background(), common.DownloadTaskTopic, valueBytes)
+	producerService := b.Sctx.GetService(common.KeyCompProducer).(common.ProducerComponent)
+	err = producerService.Produce(context.Background(), common.DownloadTaskTopic, valueBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +79,7 @@ func (b *DownloadTaskBusiness) GetDetailDownloadTask(ctx context.Context, userId
 
 func (b *DownloadTaskBusiness) ExecuteDownloadTask(ctx context.Context, downloadTaskId string) (*entity.DownloadTask, error) {
 	//update download task to
-	b.logger.Debugf("start execute download task %s, time now %s", downloadTaskId, time.Now())
+	b.logger.Infof("start execute download task %s, time now %s", downloadTaskId, time.Now())
 	update, downloadTask, err := b.Repository.UpdateStatusDownloadTaskPendingTLoading(ctx, downloadTaskId)
 	if err != nil {
 		return nil, err
@@ -102,7 +98,8 @@ func (b *DownloadTaskBusiness) ExecuteDownloadTask(ctx context.Context, download
 		return nil, err
 	}
 	fileName := fmt.Sprintf("%s_%s", common.DownloadFileNamePrefix, downloadTask.DownloadID)
-	fileWriteCloser, err := b.fileClient.Write(ctx, fileName)
+	fileComponent := b.Sctx.MustGet(common.KeyCompFileClient).(common.FileClientComponent)
+	fileWriteCloser, err := fileComponent.GetClient().Write(ctx, fileName)
 	if err != nil {
 		b.logger.Error("failed to get download file writer")
 		b.updateDownloadTaskToFailed(ctx, downloadTaskId)
@@ -126,7 +123,7 @@ func (b *DownloadTaskBusiness) ExecuteDownloadTask(ctx context.Context, download
 		b.logger.Error("failed to update download task status to success")
 		return nil, err
 	}
-	b.logger.Debugf("end execute download task %s", downloadTaskId, time.Now())
+	b.logger.Infof("end execute download task %s", downloadTaskId, time.Now())
 	return nil, nil
 }
 func (b *DownloadTaskBusiness) updateDownloadTaskToFailed(ctx context.Context, downloadTaskId string) {

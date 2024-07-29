@@ -6,7 +6,6 @@ type MqHandlerFunc func(ctx context.Context, queueName string, payload []byte) e
 
 type MqConfig struct {
 	Brokers  string
-	Version  string
 	Group    string
 	Assignor string
 	Oldest   bool

@@ -24,7 +24,7 @@ func (r *GmailPassRegistration) Register(ctx context.Context, ip string) (*entit
 		return nil, entity.ErrEmailHasExisted
 	}
 	//grpc create new user
-	userId, err := r.UserRepository.CreateUserByEmailAndIp(ctx, r.Data.Email, ip)
+	userId, err := r.UserRepository.CreateUserByEmailAndIp(ctx, r.Data.Email, ip, r.Data.FirstName, r.Data.LastName)
 	if err != nil {
 		return nil, err
 	}

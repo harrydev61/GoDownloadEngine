@@ -1,7 +1,6 @@
 package factory
 
 import (
-	"github.com/IBM/sarama"
 	"github.com/tranTriDev61/GoDownloadEngine/common"
 	"github.com/tranTriDev61/GoDownloadEngine/services/auth/entity"
 	authRepo "github.com/tranTriDev61/GoDownloadEngine/services/auth/repository/mysql"
@@ -14,7 +13,6 @@ type Logging interface {
 type EmailPasswordLogging struct {
 	Data           *entity.AuthLogging
 	AuthRepository authRepo.AuthRepository
-	producer       *sarama.SyncProducer
 }
 
 func (r *EmailPasswordLogging) Logging() (*entity.AuthEntity, error) {

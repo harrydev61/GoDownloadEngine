@@ -18,10 +18,8 @@ type DownloadTaskHdl interface {
 
 func DownloadTaskApi(sctx core.ServiceContext) DownloadTaskHdl {
 	db := sctx.MustGet(common.KeyCompMySQL).(common.GormComponent)
-	producer := sctx.MustGet(common.KeyCompProducer).(common.ProducerComponent)
-	fileComponent := sctx.MustGet(common.KeyCompFileClient).(common.FileClientComponent)
 	repo := mysql_impl.NewDownloadTaskRepositoryImpl(db.GetDB())
-	dtBusiness := business.NewDownloadTaskBusiness(sctx, repo, producer, fileComponent.GetClient())
+	dtBusiness := business.NewDownloadTaskBusiness(sctx, repo)
 	apiTransport := api.NewDownloadTransport(sctx, dtBusiness)
 	return apiTransport
 }

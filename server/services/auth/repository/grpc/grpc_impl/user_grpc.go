@@ -15,8 +15,8 @@ func NewUserGrpcRepository(client pb.UserServiceClient) *UserGrpcRepositoryImpl 
 	}
 }
 
-func (u *UserGrpcRepositoryImpl) CreateUserByEmailAndIp(ctx context.Context, email, ip string) (*string, error) {
-	result, err := u.Client.CreateUserByEmailAndIp(ctx, &pb.CreateUserByEmailAndIpReq{Email: email, Ip: ip})
+func (u *UserGrpcRepositoryImpl) CreateUserByEmailAndIp(ctx context.Context, email, ip, firstName, lastname string) (*string, error) {
+	result, err := u.Client.CreateUser(ctx, &pb.CreateUserReq{Email: email, Ip: ip, Firstname: firstName, Lastname: lastname})
 	if err != nil {
 		return nil, err
 	}

@@ -161,7 +161,7 @@ func (d *DownloadTaskRepositoryImpl) UpdateStatusDownloadTaskPendingTLoading(ctx
 			updated = false
 			return nil
 		}
-		downloadTask.DownloadStatus = common.DownloadTaskPending
+		downloadTask.DownloadStatus = common.DownloadTaskLoading
 		err = tx.Save(&downloadTask).Error
 		if err != nil {
 			return err

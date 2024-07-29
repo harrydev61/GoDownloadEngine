@@ -3,7 +3,9 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
 package main
 
-import "github.com/tranTriDev61/GoDownloadEngine/cmd"
+import (
+	"github.com/tranTriDev61/GoDownloadEngine/cmd/downloader"
+)
 
 // @title Gin Swagger API
 // @version 1.0
@@ -14,5 +16,5 @@ import "github.com/tranTriDev61/GoDownloadEngine/cmd"
 // @host localhost:8080
 // @BasePath /api/v1
 func main() {
-	cmd.Execute()
+	downloader.Execute()
 }

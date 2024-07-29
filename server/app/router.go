@@ -1,4 +1,4 @@
-package cmd
+package app
 
 import (
 	"github.com/gin-gonic/gin"
@@ -18,12 +18,10 @@ func SetupHttpRouter(serviceCtx core.ServiceContext, router *gin.RouterGroup) {
 		sourceGroup.POST("/register", composerAuthApi.RegisterHdl())
 	}
 	authMiddleware := middleware.AuthenticationMiddleware(serviceCtx)
+	composerUser := composer.UserApi(serviceCtx)
 	userGroup := router.Group("/user", authMiddleware)
 	{
-		//get detail user by id
-		userGroup.GET("/:userId", func(c *gin.Context) {
-			c.JSON(200, gin.H{"ping": "pong"})
-		})
+		userGroup.GET("/detail", composerUser.GetDetailUser())
 
 	}
 	composerDownloadTask := composer.DownloadTaskApi(serviceCtx)
@@ -34,4 +32,5 @@ func SetupHttpRouter(serviceCtx core.ServiceContext, router *gin.RouterGroup) {
 		downloadGroup.GET("/list", composerDownloadTask.GetListDownloadTask())
 		downloadGroup.DELETE("/delete/:downloadID", composerDownloadTask.TenderlyDeleteDownloadTask())
 	}
+
 }

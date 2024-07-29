@@ -272,4 +272,31 @@ paths:
       summary: Get list download task
       tags:
       - Download task
+  /user/detail:
+    get:
+      consumes:
+      - application/json
+      description: Get detail user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BaseSuccessResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/common.BaseErrorResponse'
+      summary: Get detail user
+      tags:
+      - user
 swagger: "2.0"

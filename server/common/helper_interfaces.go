@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"crypto/rsa"
-	"github.com/IBM/sarama"
 	"github.com/go-redis/redis"
 	"google.golang.org/grpc"
 	"time"
@@ -57,14 +56,6 @@ type MqComponent interface {
 type ProducerComponent interface {
 	ID() string
 	Produce(ctx context.Context, queueName string, payload []byte) error
-	Stop() error
-}
-
-type ConsumerComponent interface {
-	ID() string
-	GetConfig() *sarama.Config
-	RegisterHandler(queueName string, handlerFunc MqHandlerFunc)
-	Start(ctx context.Context) error
 	Stop() error
 }
 
