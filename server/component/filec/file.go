@@ -1,18 +1,10 @@
 package filec
 
 import (
-	"bufio"
-	"context"
-	"errors"
 	"flag"
-	"fmt"
 	"github.com/tranTriDev61/GoDownloadEngine/common"
+	"github.com/tranTriDev61/GoDownloadEngine/component/filec/factory"
 	"github.com/tranTriDev61/GoDownloadEngine/core"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"io"
-	"os"
-	"path"
 )
 
 type fileC struct {
@@ -22,9 +14,10 @@ type fileC struct {
 	mode              string
 	downloadDirectory string
 	bucket            string
-	address           string
-	username          string
-	password          string
+	endpoint          string
+	accessKeyID       string
+	secretAccessKey   string
+	useSSL            bool
 }
 
 func NewFileC(id string) *fileC {
@@ -49,32 +42,49 @@ func (f *fileC) InitFlags() {
 		"bucket name",
 	)
 	flag.StringVar(
-		&f.address,
-		"download_address",
+		&f.endpoint,
+		"download_endpoint",
 		"",
-		"download address",
+		"download endpoint",
 	)
 	flag.StringVar(
-		&f.username,
-		"download_username",
+		&f.accessKeyID,
+		"download_access_Key_id",
 		"",
-		"download username",
+		"download accessKeyID",
 	)
 	flag.StringVar(
-		&f.password,
-		"download_password",
+		&f.secretAccessKey,
+		"download_secret_access_key",
 		"",
-		"download password",
+		"download secretAccessKey",
+	)
+	flag.BoolVar(
+		&f.useSSL,
+		"download_use_ssl",
+		false,
+		"download use ssl",
 	)
 
 }
 
 func (f *fileC) Activate(sctx core.ServiceContext) error {
 	f.logger = sctx.Logger(f.id)
-	client, err := newClient(*f, f.logger)
+	config := factory.ClientConfig{
+		Mode:              f.mode,
+		DownloadDirectory: f.downloadDirectory,
+		Bucket:            f.bucket,
+		Endpoint:          f.endpoint,
+		AccessKeyID:       f.accessKeyID,
+		SecretAccessKey:   f.secretAccessKey,
+		UseSSL:            f.useSSL,
+	}
+	client, err := factory.FileFactory(config, f.logger)
 	if err != nil {
 		f.logger.Errorf("New file client error: %v", err)
+		return err
 	}
+	f.logger.Infof("New file client with mod: %v", f.mode)
 	f.client = client
 	return nil
 }
@@ -85,78 +95,4 @@ func (r *fileC) Stop() error {
 
 func (r *fileC) GetClient() common.FileClient {
 	return r.client
-}
-
-func newClient(downloadConfig fileC, logger core.Logger) (common.FileClient, error) {
-	switch downloadConfig.mode {
-	case common.DownloadModeLocal:
-		return newLocalClient(downloadConfig, logger)
-	default:
-		return nil, fmt.Errorf("unsupported download mode: %s", downloadConfig.mode)
-	}
-}
-
-type bufferedFileReader struct {
-	file           *os.File
-	bufferedReader io.Reader
-}
-
-func newBufferedFileReader(
-	file *os.File,
-) io.ReadCloser {
-	return &bufferedFileReader{
-		file:           file,
-		bufferedReader: bufio.NewReader(file),
-	}
-}
-
-func (b bufferedFileReader) Close() error {
-	return b.file.Close()
-}
-
-func (b bufferedFileReader) Read(p []byte) (int, error) {
-	return b.bufferedReader.Read(p)
-}
-
-type LocalClient struct {
-	downloadDirectory string
-	logger            core.Logger
-}
-
-func newLocalClient(
-	downloadConfig fileC,
-	logger core.Logger,
-) (common.FileClient, error) {
-	if err := os.MkdirAll(downloadConfig.downloadDirectory, 0755); err != nil {
-		if !errors.Is(err, os.ErrExist) {
-			return nil, fmt.Errorf("failed to create download directory: %w", err)
-		}
-	}
-
-	return &LocalClient{
-		downloadDirectory: downloadConfig.downloadDirectory,
-		logger:            logger,
-	}, nil
-}
-
-func (l LocalClient) Read(ctx context.Context, filePath string) (io.ReadCloser, error) {
-	absolutePath := path.Join(l.downloadDirectory, filePath)
-	file, err := os.Open(absolutePath)
-	if err != nil {
-		l.logger.Error("failed to open file")
-		return nil, status.Error(codes.Internal, "failed to open file")
-	}
-
-	return newBufferedFileReader(file), nil
-}
-
-func (l *LocalClient) Write(ctx context.Context, filePath string) (io.WriteCloser, error) {
-	absolutePath := path.Join(l.downloadDirectory, filePath)
-	l.logger.Debugf("file path: %s", absolutePath)
-	file, err := os.Create(absolutePath)
-	if err != nil {
-		l.logger.Error("failed to open file")
-		return nil, status.Error(codes.Internal, "failed to open file")
-	}
-	return file, nil
 }

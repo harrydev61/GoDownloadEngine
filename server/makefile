@@ -3,7 +3,7 @@ PROJECT_NAME := downloader
 
 .PHONY: start
 start:
-	go run main.go standalone-server
+	go run -ldflags "-X main.version=$(VERSION)" main.go standalone-server
 
 .PHONY: gen-doc
 gen-doc:
