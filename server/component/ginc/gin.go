@@ -55,7 +55,6 @@ func (gs *ginEngine) Activate(sv core.ServiceContext) error {
 		gin.SetMode(gin.ReleaseMode)
 		gs.timeExit = 5
 	}
-
 	gs.logger.Info("init engine...")
 	gs.router = gin.New()
 	return nil
