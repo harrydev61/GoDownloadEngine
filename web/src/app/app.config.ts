@@ -6,7 +6,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideHttpClient, withFetch, withInterceptors} from "@angular/common/http";
 import {ErrorInterceptor} from "@app/interceptors/error.interceptor";
-
+import { provideStore } from '@ngrx/store';
+import {reducers, metaReducers} from './stores/reducers'
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
@@ -14,5 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHttpClient(
       withFetch(),
-      withInterceptors([ErrorInterceptor]))]
+      withInterceptors([ErrorInterceptor])),
+    provideStore(reducers, {metaReducers})
+    ]
 };
