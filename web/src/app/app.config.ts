@@ -7,7 +7,8 @@ import {provideAnimations} from "@angular/platform-browser/animations";
 import {provideHttpClient, withFetch, withInterceptors} from "@angular/common/http";
 import {ErrorInterceptor} from "@app/interceptors/error.interceptor";
 import { provideStore } from '@ngrx/store';
-import {reducers, metaReducers} from './stores/reducers'
+import {rootReducers, rootEffects, metaReducers} from "./stores/index"
+import { provideEffects } from '@ngrx/effects';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
@@ -16,6 +17,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withFetch(),
       withInterceptors([ErrorInterceptor])),
-    provideStore(reducers, {metaReducers})
+    provideStore(rootReducers, {metaReducers}),
+    provideEffects(rootEffects)
     ]
 };

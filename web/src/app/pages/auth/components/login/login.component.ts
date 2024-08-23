@@ -4,6 +4,9 @@ import {AuthenticationService} from "@services/authenticate.service";
 import {BaseComponent} from "@app/component/base/base.component";
 import {catchError, map} from "rxjs";
 import {User} from "@models/user.model";
+import { IAuthState } from '@app/stores/auth/auth.state';
+import { Store } from '@ngrx/store';
+import { loginStart } from '@app/stores/auth/actions/login.actions';
 
 @Component({
   selector: 'pages-auth-login-app-login',
@@ -18,7 +21,10 @@ export class PagesAuthLoginComponent extends BaseComponent implements OnInit {
   protected googleIconPath = '../../../../assets/images/social/google.png'
   protected facebookIconPath = '../../../../assets/images/social/facebook.png'
   protected loginForm: any;
-  constructor(private authenticationService: AuthenticationService) {
+  constructor(
+    private authenticationService: AuthenticationService,
+    private store: Store<IAuthState>,
+  ) {
     super();
   }
   ngOnInit(): void {
@@ -35,16 +41,6 @@ export class PagesAuthLoginComponent extends BaseComponent implements OnInit {
   onSubmit() {
     const email = this.loginForm.value.email;
     const password = this.loginForm.value.password;
-    this.authenticationService.login(email, password).subscribe((result) => {
-      if (result) {
-        if (result?.status === 1) {
-          //get user info
-          return
-        }
-      }
-    })
+    this.store.dispatch(loginStart({email, password}))
   }
-
-
-
 }

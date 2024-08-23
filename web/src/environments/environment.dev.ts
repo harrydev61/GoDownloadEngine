@@ -99,5 +99,14 @@ export const environment = {
                 }
             }
         },
+    },
+    state: {
+        login: {
+            loginConfirm: 0,
+            loginStart: 1,
+            loginExcute: 2,
+            loginEnd: 3,
+            loginFailed: -1
+        }
     }
 };
