@@ -2,17 +2,17 @@ import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {AuthenticationService} from "@services/authenticate.service";
 import {BaseComponent} from "@app/component/base/base.component";
-import {catchError, map} from "rxjs";
-import {User} from "@models/user.model";
 import { IAuthState } from '@app/stores/auth/auth.state';
 import { Store } from '@ngrx/store';
 import { loginStart } from '@app/stores/auth/actions/login.actions';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'pages-auth-login-app-login',
   standalone: true,
   imports: [
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    RouterLink
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
@@ -20,7 +20,7 @@ import { loginStart } from '@app/stores/auth/actions/login.actions';
 export class PagesAuthLoginComponent extends BaseComponent implements OnInit {
   protected googleIconPath = '../../../../assets/images/social/google.png'
   protected facebookIconPath = '../../../../assets/images/social/facebook.png'
-  protected loginForm: any;
+  protected loginForm!: FormGroup;
   constructor(
     private authenticationService: AuthenticationService,
     private store: Store<IAuthState>,

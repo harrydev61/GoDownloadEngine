@@ -42,6 +42,21 @@ export class AuthenticationService {
     }))
   }
 
+  signup(data: any) {
+    return this.httpService.post(this.apiServerPath.auth.signup, {
+      email: data.email,
+      password: data.password,
+      phone: data.phone,
+
+    }, map((response: any) => {
+      return {
+        status: response?.status,
+        message: response?.message,
+        data: response.data
+      }
+    }))
+  }
+
   logout() {
     this.localStorageService.delete(this.key);
     this.currentUserSubject.next(null);
@@ -69,9 +84,7 @@ export class AuthenticationService {
       createdDate,
       expirationDate,
       data.verifyOtp || false,
-      data.apps,
       data.status,
-      data.groupUserPermission
     );
     return user;
   }
@@ -130,9 +143,7 @@ export class AuthenticationService {
         createdDate,
         expirationDate,
         userData.verifyOtp,
-        userData.apps,
         userData.status,
-        userData.groupUserPermission,
       );
       // this.runTimeoutInterval(user);
       return user;

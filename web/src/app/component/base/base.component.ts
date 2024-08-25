@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import {PaginationComponent} from "@app/component/pagination/pagination.component";
-
+import { AppConstant } from '@app/constants/app.contants';
 @Component({
   selector: 'app-base',
   standalone: true,
@@ -10,5 +10,5 @@ import {PaginationComponent} from "@app/component/pagination/pagination.componen
   `
 })
 export class BaseComponent {
-
+	protected constant = AppConstant;
 }

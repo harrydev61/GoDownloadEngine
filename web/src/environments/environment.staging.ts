@@ -73,6 +73,7 @@ export const environment = {
                     callback: 'auth/google/callback',
                 },
                 otpVerify: 'auth/otp/verify',
+                signup: 'auth/register',
             },
             administrator: {
                 role: {

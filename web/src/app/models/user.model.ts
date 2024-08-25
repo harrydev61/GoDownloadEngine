@@ -11,17 +11,11 @@ export class User {
     public roleName: string,
     public accessToken: string,
     public refreshToken: string,
+    public expireDate: Date,
     public createdDate: Date,
-    public expirationDate: Date,
     public verifyOtp: boolean = false,
-    public apps: string,
     public status: number,
-    public groupUserPermission: any[] = [],
   ) {}
-
-  get expireDate() {
-    return this.expirationDate;
-  }
 
   get userAccessToken() {
     return this.accessToken;
@@ -41,5 +35,9 @@ export class User {
 
   public isAdmin() {
     return this.roleId === environment.roles.superAdmin || this.roleId === environment.roles.admin;
+  }
+
+  public getFullName(firstName: string, lastName: string) {
+    return firstName + lastName
   }
 }

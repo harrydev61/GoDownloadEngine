@@ -68,6 +68,7 @@ export const environment = {
                     request: 'auth/{SOCIAL_NAME}/request',
                     callback: 'auth/{SOCIAL_NAME}/callback',
                 },
+                signup: 'auth/register',
                 google: {
                     request: 'auth/google/request',
                     callback: 'auth/google/callback',
